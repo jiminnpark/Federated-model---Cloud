@@ -1,0 +1,236 @@
+<html>
+  <head>
+    <title>Welcome</title>
+ <style>
+   * { 
+  box-sizing: border-box;
+}
+body {
+  background:     url('http://www.transparenttextures.com/patterns/transparent-square-tiles.png'),
+    linear-gradient(
+      to bottom,
+      hsla(221, 58%, 52%, 1),
+      hsla(208, 97%, 74%, 1)
+  );
+  display: flex;
+  flex-flow: column;
+  font-family: 'Roboto', sans-serif;
+  min-height: 100vh;
+}
+main {
+  background-color: hsla(0, 0%, 100%, 0.3);
+  box-shadow: 0 5px 20px 5px hsla(0, 0%, 0%, .1);
+  color: hsla(240, 100%, 18%, 1);
+  font-weight: 600;
+  margin: auto; /* center me! */
+  max-width: 500px;
+  padding: 2em;
+  padding-bottom: 3em;
+  width: 80%;
+}
+footer {
+  font-size: 0.75em;
+  text-align: center;
+}
+h1 {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 500;
+  margin-bottom: 1em;
+  text-align: center;
+}
+/* Setup blur animation */
+.form-success {
+  animation: blur 3s;
+}
+@keyframes blur {
+  0%, 100% {
+    -webkit-filter: blur(0px);
+  }
+  50% {
+    -webkit-filter: blur(10px);
+  }
+}
+/* Setup shake animation */
+.form-error {
+  animation: shake 500ms;
+}
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-10px);
+  }
+  40% {
+    transform: translateX(10px);
+  }
+  60% {
+    transform: translateX(-10px);
+  }
+  80% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+label {
+  display: block;
+  margin-bottom: .3em;
+}
+input {
+  border: none;
+  margin-bottom: 1em;
+  padding: .6em 1em;
+  width: 100%;
+}
+::-webkit-input-placeholder {
+  color: #aaa;
+  font-weight: 100;
+}
+.error::-webkit-input-placeholder {
+  color: maroon;
+}
+.error {
+  border: solid 1px maroon;
+}
+.submit {
+  text-align: center;
+}
+.submit p {
+  display: none;
+}
+.msg-error {
+  color: maroon;
+}
+.msg-success {
+  color: #415c07;
+}
+button {
+  background: #6b8f20;
+  border: solid 1px #5a7520;
+  color: #eee;
+  padding: 1em 1.5em;
+}
+ </style>
+ <script>
+   // save the original placeholder
+$('input').each(function () {
+  $(this).data('placeholder', $(this).attr('placeholder'));
+});
+
+// Animate form states
+$('form').on('submit', function(event) {
+  var $form = $(this);
+  var $all  = $('main');
+  var valid = validate($form);
+  
+  event.preventDefault();
+  
+  // warn about errors
+  if (!valid || $form.find('input').hasClass('error')) {
+    $all.addClass('form-error');
+    $('.msg-error')
+      .show()
+      .siblings('p')
+      .hide();
+  // blissfully fade away
+  } else {
+    $all.addClass('form-success');
+    $('.msg-error').fadeOut(1500);
+    setTimeout(function () {
+      $form[0].reset();
+      $('.msg-success').fadeIn();
+    }, 1500);
+  }
+});
+
+// Reset animations so we can submit the demo form again
+$('main').on("animationend webkitAnimationEnd", function () {
+  var $elem = $(this);
+  if ($elem.find('input').hasClass('error')) {
+    $elem.removeClass('form-error');
+  } else {
+    $elem.removeClass('form-success');
+  }
+});
+
+// Basic validation
+// Just loop through each input and see if it has a value
+function validate(form) {
+  var valid = true;
+
+  $(form).find('input').each(function () {
+    var $el   = $(this);
+    var name  = $el.attr('name');
+
+    if (!$el.val()) {
+      valid = false;
+      $el.attr('placeholder', 'Your ' + name + ' is required');
+      $el.addClass('error');
+    } else {
+      valid = true;
+      $el.removeClass('error');
+      // reset placeholder
+      $el.attr('placeholder', $el.data('placeholder'));
+    }
+  });
+  return valid;
+}
+ </script>
+  </head>
+<body>
+
+<main style="position:absolute;left:20px;top:20px; width:150px;margin:auto;padding:0;height:50px">
+  <center><p>{{ user }}</p></center>
+</main>
+<main>
+  <h1>Local Client Model data</h1>
+  <form action="/welcome" method="POST">
+    <input name="user" style="display:none" value={{ user }}>
+    <label for="intercept">Intercept</label>
+    <input type="number" step="0.00001" name="intercept"  >
+    <label for="rad_mean">Radius Mean</label>
+    <input type="number" step="0.00001" name="rad_mean"  >
+    <label for="texture_mean">Texture mean</label>
+    <input type="number" step="0.00001" name="texture_mean"  >
+    <label for="smooth_mean">Smoothness mean</label>
+    <input type="number" step="0.00001" name="smooth_mean"  >
+    <label for="compact_mean">Compact mean</label>
+    <input type="number" step="0.00001" name="compact_mean"  >
+    <label for="symmetry_mean">Symmetry mean</label>
+    <input type="number" step="0.00001" name="symmetry_mean"  >
+    <label for="fract_dim_mean">Fractal dimension mean</label>
+    <input type="number" step="0.00001" name="fract_dim_mean"  >
+    <label for="rad_se">Radius SE</label>
+    <input type="number" step="0.00001" name="rad_se"  >
+    <label for="texture_se">Texture SE</label>
+    <input type="number" step="0.00001" name="texture_se"  >
+    <label for="smooth_se">Smoothness SE</label>
+    <input type="number" step="0.00001" name="smooth_se"  >
+    <label for="compact_se">Compact SE</label>
+    <input type="number" step="0.00001" name="compact_se"  >
+    <label for="symmetry_se">Symmetry SE</label>
+    <input type="number" step="0.00001" name="symmetry_se"  >
+    <label for="fract_dim_se">Fractal dimension SE</label>
+    <input type="number" step="0.00001" name="fract_dim_se"  >
+     
+    <div class="submit">
+      <p class="msg-error">You seem to have missed a field or two!</p>
+      <p class="msg-success">{{ error }}</p>
+      <button type="submit">Send inference</button>
+    </div>
+</form>
+</main>
+<div> <br><br><br></div>
+<main>
+  <center> {{ updated_params }} </center>
+  <br><br>
+  <form action="/predict" method="GET">
+  <input name="user" value="{{ user }}" style="display:none">
+  <center><button type="submit" style="background-color:indianred"><strong>PREDICT</strong> </button></center>
+  </form> 
+</main>
+<br>
+</body>
+</html> 

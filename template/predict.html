@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+.row {
+  margin:15px 0;
+}
+label {
+  margin-bottom: 0;
+  margin-left: 1px;
+}
+:root {
+  --primaryFont: "Inter", sans-serif, -apple-system, ui-sans-serif, system-ui, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, monospace;
+  --secondaryFont: "Space Grotesk", monospace;
+  --black0: #000;
+  --black1: #131516;
+  --black2: #212121;
+  --grey1: #818080;
+  --grey2: #1c1c1c;
+  --grey3: #1b1a1a;
+  --white1: #fff;
+  --white2: #aaa;
+}
+
+*,
+*:before,
+*:after {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+html {
+  height: calc(100vh - calc(100vh - 100%));
+  line-height: 1.15;
+  font-size: 18px;
+}
+
+body {
+  background:#212121;
+  color: var(--white1);
+  font-size: 1rem;
+  font-weight: 400;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 1rem;
+  font-family: var(--primaryFont);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: inherit;
+  position: relative;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4rem;
+  position: relative;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 0 1.5rem 0 1.5rem;
+  position: relative;
+  background: linear-gradient(180deg, transparent 75%, 90%);
+  z-index: 3;
+}
+
+.title {
+  padding: 1.5rem;
+}
+
+.title h1 {
+  font-size:2.25rem;
+  font-family:var(--primaryFont);
+  text-align:center;
+}
+
+.grid {
+  display:flex;
+  justify-content:center;
+  column-gap: 1rem;
+  row-gap: 1.5rem;
+  max-width: 800px;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.cell {
+  border: 1px solid grey;
+  box-shadow: 2px 3px 10px gray;
+  border-radius: .75rem;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.cell-content {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  width: 100%;
+  height: 100%;
+}
+
+.cell-body {
+  display: flex;
+  flex-direction: column;
+  row-gap: .5rem;
+}
+
+.cell-title {
+  font-family: var(--secondaryFont);
+  font-weight: 700;
+}
+
+.cell-subtitle {
+  opacity: .8;
+  font-size: .75rem;
+}
+
+.follower {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, .3);
+  box-shadow:
+    rgba(255, 255, 255, .2) 0 0 12px 0,
+    rgba(255, 255, 255, .2) 0 0 12px 0,
+    rgba(255, 255, 255, .2) 0 0 16px 0,
+    rgba(255, 255, 255, .2) 0 0 16px 0,
+    rgba(255, 255, 255, .2) 0 0 24px 4px,
+    rgba(255, 255, 255, .2) 0 0 48px 6px;
+  border-radius: 50%;
+  filter: blur(32px);
+  opacity: .5;
+  pointer-events: none;
+  user-select: none;
+  z-index: 999;
+}
+
+@media screen and (max-width: 1020px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+@media screen and (max-width: 720px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 490px) {
+  html {
+    font-size: 13px;
+  }
+
+  .grid {
+    flex-direction:column;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  html {
+    font-size: 11px;
+  }
+}
+  </style>
+  <script>
+    const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+let activeCell;
+
+const updateFollower = (cell, follower, left, top) => {
+  const cellRect = cell.getBoundingClientRect();
+  const [cellLeft, cellTop] = [cellRect.left, cellRect.top];
+  const [cellWidth, cellHeight] = [cellRect.width, cellRect.height];
+  
+  follower.style.left = `${Math.round(
+    ((left - cellLeft) / cellWidth) * 100)}%`;
+  follower.style.top = `${Math.round(
+    ((top - cellTop) / cellHeight) * 100)}%`;
+};
+
+const createFollower = (cell, x, y) => {
+  const f = document.createElement("aside");
+  f.classList.add("follower");
+  updateFollower(cell, f, x, y);
+  cell.appendChild(f);
+};
+
+const handleFollower = (e, cell) => {
+  const [initx, inity] = [e.clientX, e.clientY];
+  activeCell = cell;
+  createFollower(cell, initx, inity);
+  const follower = $(".follower");
+
+  const handleMouseMove = e => {
+    updateFollower(cell, follower, e.clientX, e.clientY);
+
+    if (cell !== activeCell || !follower) {
+      if (follower) {follower.remove();}
+      activeCell = null;
+      document.removeEventListener("mousemove", handleMouseMove);
+      return;
+    }
+  };
+  document.addEventListener("mousemove", handleMouseMove);
+};
+
+const handleMouseover = e => {
+  const c = e.target.closest(".cell");
+  handleFollower(e, c);
+}
+
+const handleMouseout = e => {
+  const followers = $$(".follower");
+  if (followers) {
+    followers.forEach(follower => follower.remove());
+  }
+}
+
+$$(".cell").forEach((cell) => {
+  cell.onmouseover = handleMouseover;
+  cell.onmouseout = handleMouseout;
+})
+  </script>
+</head>
+<body>
+  <div class="container-fluid">
+    <form role="form"  id="form_tambah_kriteria" class="margin-bottom-0" method="POST" action="/predict">
+      <input name="user" value="{{ user }}" style="display:none">  
+      <div class="form-row d-flex align-items-end">
+            <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="rad_mean" class="form-control" placeholder="Radius mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="texture_mean" class="form-control" placeholder="Texture mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="smooth_mean" class="form-control" placeholder="Smooth mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="symmetry_mean" class="form-control" placeholder="Symmetry mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="compact_mean" class="form-control" placeholder="Compact mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="fract_dim_mean" class="form-control" placeholder="Fractal dimension mean">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="rad_se" class="form-control" placeholder="Radius SE">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="texture_se" class="form-control" placeholder="Texture SE">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="smooth_se" class="form-control" placeholder="Smoothness SE">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="compact_se" class="form-control" placeholder="Compact SE">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="symmetry_se" class="form-control" placeholder="Symmetry SE">
+                </div>
+            </div>
+          <div class="form-group col-md-4 col-sm-6">
+                <div class="input-group">
+                    <input required type="number" step="0.00001" name="fract_dim_se" class="form-control" placeholder="Fractal dimension SE">
+                </div>
+            </div>
+            <div class="container">&nbsp</div>
+            <div class="form-group col-md-12 text-center">
+              <button class="btn btn-danger">Predict</button>
+          </div>
+        </div>
+    </form>
+      <main class="main">
+        <div class="container">
+        
+    
+          <div class="grid">
+            <div class="cell text-center">
+              <div class="cell-content">
+                <div class="cell-icon">
+                  <svg data-testid="geist-icon" fill="none" height="24" shape-rendering="geometricPrecision"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    viewBox="0 0 24 24" width="24" style="color:var(--geist-foreground)">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                </div>
+                <div class="cell-body">
+                  <div class="cell-title">Local model prediction</div>
+                  <div class="cell-subtitle">
+                    <p style="color:lawngreen;font-size: 2em;">{{ loc_predict }}</p>
+                  </div>
+                </div>
+              </div>
+    
+            </div>
+    
+            <div class="cell text-center">
+              <div class="cell-content">
+    
+                <div class="cell-icon">
+                  <svg data-testid="geist-icon" fill="none" height="24" shape-rendering="geometricPrecision"
+                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    viewBox="0 0 24 24" width="24" style="color:var(--geist-foreground)">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M2 12h20" />
+                    <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                  </svg>
+                </div>
+                <div class="cell-body">
+                  <div class="cell-title">Global model prediction</div>
+                  <div class="cell-subtitle">
+                   <p style="color:lawngreen;font-size: 2em;">{{ fed_predict }}</p> 
+                  </div>
+                </div>
+              </div>
+    
+            </div>
+    
+          </div>
+        </div>
+      </main>
+    </div>
+</body>
+</html>
